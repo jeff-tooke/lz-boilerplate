@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(terraform validate:*)",
-      "Bash(builtin cd /Users/2231803/projects/stw/code/terraform-modules)"
-    ]
-  }
-}
