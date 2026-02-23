@@ -23,7 +23,7 @@ module "aft_account_request" {
 
   control_tower_parameters = {
     AccountEmail              = var.account_email
-    AccountName               = "${local.domain_prefix}-${var.svc_name}-${var.environment}"
+    AccountName               = "${local.domain_prefix}-${var.svc_name}-${var.environment}-euw2-account"
     ManagedOrganizationalUnit = var.ou_name
     SSOUserEmail              = var.account_email
     SSOUserFirstName          = "Platform"
