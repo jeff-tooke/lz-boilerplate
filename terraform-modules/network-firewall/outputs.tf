@@ -53,13 +53,13 @@ output "firewall_endpoint_ids_by_subnet" {
 ################################################################################
 
 output "firewall_policy_arn" {
-  description = "ARN of the firewall policy"
-  value       = local.create_policy ? aws_networkfirewall_firewall_policy.this[0].arn : var.firewall_policy_arn
+  description = "ARN of the active firewall policy"
+  value       = local.effective_firewall_policy_arn
 }
 
 output "firewall_policy_id" {
-  description = "ID of the firewall policy (null if using external policy)"
-  value       = local.create_policy ? aws_networkfirewall_firewall_policy.this[0].id : null
+  description = "ID of the active firewall policy (null if using external policy)"
+  value       = var.create_allow_all_policy ? aws_networkfirewall_firewall_policy.allow_all[0].id : (local.create_policy ? aws_networkfirewall_firewall_policy.this[0].id : null)
 }
 
 ################################################################################
@@ -151,13 +151,13 @@ output "dr_firewall_endpoint_ids_by_subnet" {
 ################################################################################
 
 output "dr_firewall_policy_arn" {
-  description = "ARN of the DR firewall policy (null if DR not enabled)"
-  value       = var.dr_enabled && local.create_policy ? aws_networkfirewall_firewall_policy.dr[0].arn : null
+  description = "ARN of the active DR firewall policy (null if DR not enabled)"
+  value       = var.dr_enabled ? local.effective_dr_firewall_policy_arn : null
 }
 
 output "dr_firewall_policy_id" {
-  description = "ID of the DR firewall policy (null if DR not enabled or using external policy)"
-  value       = var.dr_enabled && local.create_policy ? aws_networkfirewall_firewall_policy.dr[0].id : null
+  description = "ID of the active DR firewall policy (null if DR not enabled or using external policy)"
+  value       = var.dr_enabled ? (var.create_allow_all_policy ? aws_networkfirewall_firewall_policy.allow_all_dr[0].id : (local.create_policy ? aws_networkfirewall_firewall_policy.dr[0].id : null)) : null
 }
 
 ################################################################################

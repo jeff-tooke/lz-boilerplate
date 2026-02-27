@@ -110,3 +110,41 @@ output "dr_ram_principal_associations" {
   description = "List of DR RAM principal association ARNs (empty if DR not enabled or sharing not enabled)"
   value       = var.dr_enabled && var.share_transit_gateway ? aws_ram_principal_association.dr_tgw[*].id : []
 }
+
+################################################################################
+# Primary Region - Environment Route Table Outputs
+################################################################################
+
+output "inspection_route_table_id" {
+  description = "ID of the inspection TGW route table for the hub/firewall attachment (null if environment route tables not enabled)"
+  value       = local.create_env_rts ? aws_ec2_transit_gateway_route_table.inspection[0].id : null
+}
+
+output "environment_route_table_ids" {
+  description = "Map of environment name to TGW route table ID (empty map if environment route tables not enabled)"
+  value       = local.create_env_rts ? { for k, v in aws_ec2_transit_gateway_route_table.environment : k => v.id } : {}
+}
+
+output "shared_services_route_table_id" {
+  description = "ID of the shared services TGW route table (null if not enabled)"
+  value       = local.create_env_rts && var.create_shared_services_route_table ? aws_ec2_transit_gateway_route_table.shared_services[0].id : null
+}
+
+################################################################################
+# DR Region - Environment Route Table Outputs
+################################################################################
+
+output "dr_inspection_route_table_id" {
+  description = "ID of the DR inspection TGW route table (null if DR or environment route tables not enabled)"
+  value       = var.dr_enabled && local.create_env_rts ? aws_ec2_transit_gateway_route_table.inspection_dr[0].id : null
+}
+
+output "dr_environment_route_table_ids" {
+  description = "Map of environment name to DR TGW route table ID (empty map if not enabled)"
+  value       = var.dr_enabled && local.create_env_rts ? { for k, v in aws_ec2_transit_gateway_route_table.environment_dr : k => v.id } : {}
+}
+
+output "dr_shared_services_route_table_id" {
+  description = "ID of the DR shared services TGW route table (null if not enabled)"
+  value       = var.dr_enabled && local.create_env_rts && var.create_shared_services_route_table ? aws_ec2_transit_gateway_route_table.shared_services_dr[0].id : null
+}

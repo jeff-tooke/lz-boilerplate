@@ -13,6 +13,10 @@ locals {
   # Determine if we need to create a firewall policy
   create_policy = var.firewall_policy_arn == ""
 
+  # Effective policy ARN: allow-all takes precedence, then created policy, then supplied ARN
+  effective_firewall_policy_arn    = var.create_allow_all_policy ? aws_networkfirewall_firewall_policy.allow_all[0].arn : (local.create_policy ? aws_networkfirewall_firewall_policy.this[0].arn : var.firewall_policy_arn)
+  effective_dr_firewall_policy_arn = var.create_allow_all_policy ? aws_networkfirewall_firewall_policy.allow_all_dr[0].arn : (local.create_policy ? aws_networkfirewall_firewall_policy.dr[0].arn : var.firewall_policy_arn)
+
   # Determine if we need to create log groups
   create_alert_log_group = var.logging_enabled && var.alert_log_destination_type == "CloudWatchLogs" && var.alert_log_destination == ""
   create_flow_log_group  = var.logging_enabled && var.flow_log_destination_type == "CloudWatchLogs" && var.flow_log_destination == ""

@@ -88,7 +88,8 @@ module "network_firewall" {
   vpc_id     = module.hub_vpc.vpc_id
   subnet_ids = module.hub_vpc.firewall_subnet_ids_list
 
-  firewall_policy_arn = var.firewall_policy_arn
+  firewall_policy_arn     = var.firewall_policy_arn
+  create_allow_all_policy = var.create_allow_all_policy
 
   # DR region
   dr_enabled       = var.dr_enabled
@@ -122,6 +123,11 @@ module "transit_gateway" {
   secondary_region = var.secondary_region
   dr_vpc_id        = module.hub_vpc.dr_vpc_id
   dr_subnet_ids    = module.hub_vpc.dr_tgw_attachment_subnet_ids_list
+
+  # Environment route table segmentation
+  create_environment_route_tables    = var.create_environment_route_tables
+  environments                       = var.environments
+  create_shared_services_route_table = var.create_shared_services_route_table
 
   tags = local.common_tags
 }

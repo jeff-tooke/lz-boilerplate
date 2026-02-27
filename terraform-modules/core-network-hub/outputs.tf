@@ -286,3 +286,37 @@ output "transit_gateway_attachment_id" {
   description = "ID of the Transit Gateway VPC attachment"
   value       = module.transit_gateway[0].vpc_attachment_id
 }
+
+################################################################################
+# Transit Gateway - Environment Route Table Outputs
+################################################################################
+
+output "inspection_route_table_id" {
+  description = "ID of the inspection TGW route table for the hub/firewall attachment (null if environment route tables not enabled)"
+  value       = module.transit_gateway[0].inspection_route_table_id
+}
+
+output "environment_route_table_ids" {
+  description = "Map of environment name to TGW route table ID (empty map if environment route tables not enabled)"
+  value       = module.transit_gateway[0].environment_route_table_ids
+}
+
+output "shared_services_route_table_id" {
+  description = "ID of the shared services TGW route table (null if not enabled)"
+  value       = module.transit_gateway[0].shared_services_route_table_id
+}
+
+output "dr_inspection_route_table_id" {
+  description = "ID of the DR inspection TGW route table (null if DR or environment route tables not enabled)"
+  value       = module.transit_gateway[0].dr_inspection_route_table_id
+}
+
+output "dr_environment_route_table_ids" {
+  description = "Map of environment name to DR TGW route table ID (empty map if not enabled)"
+  value       = module.transit_gateway[0].dr_environment_route_table_ids
+}
+
+output "dr_shared_services_route_table_id" {
+  description = "ID of the DR shared services TGW route table (null if not enabled)"
+  value       = module.transit_gateway[0].dr_shared_services_route_table_id
+}

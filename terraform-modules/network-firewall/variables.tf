@@ -59,6 +59,12 @@ variable "firewall_policy_arn" {
   default     = ""
 }
 
+variable "create_allow_all_policy" {
+  description = "TEMPORARY: Create a permissive allow-all firewall policy that passes all traffic without inspection. Use only during initial hub build and connectivity testing. Takes precedence over firewall_policy_arn and any rule group inputs. Must be set to false before production."
+  type        = bool
+  default     = false
+}
+
 variable "policy_stateless_default_actions" {
   description = "Default actions for stateless traffic (aws:pass, aws:drop, aws:forward_to_sfe)"
   type        = list(string)

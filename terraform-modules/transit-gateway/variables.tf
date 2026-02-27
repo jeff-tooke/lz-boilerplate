@@ -214,3 +214,25 @@ variable "dr_transit_gateway_id" {
   type        = string
   default     = ""
 }
+
+################################################################################
+# Environment Route Table Configuration
+################################################################################
+
+variable "create_environment_route_tables" {
+  description = "Whether to create per-environment TGW route tables for traffic segmentation and firewall enforcement. When true, the TGW default route table association and propagation are disabled."
+  type        = bool
+  default     = false
+}
+
+variable "environments" {
+  description = "List of environment names to create dedicated TGW route tables for (e.g. [\"dev\", \"test\", \"preprod\", \"prod\"]). Only used when create_environment_route_tables is true."
+  type        = list(string)
+  default     = []
+}
+
+variable "create_shared_services_route_table" {
+  description = "Whether to create a dedicated TGW route table for shared services attachments. Only used when create_environment_route_tables is true."
+  type        = bool
+  default     = false
+}

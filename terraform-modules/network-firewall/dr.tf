@@ -286,7 +286,7 @@ resource "aws_networkfirewall_firewall" "dr" {
   name                              = "${var.name}-firewall-dr"
   description                       = "Network firewall for ${var.name} hub (DR)"
   vpc_id                            = var.dr_vpc_id
-  firewall_policy_arn               = local.create_policy ? aws_networkfirewall_firewall_policy.dr[0].arn : var.firewall_policy_arn
+  firewall_policy_arn               = local.effective_dr_firewall_policy_arn
   delete_protection                 = var.delete_protection
   subnet_change_protection          = var.subnet_change_protection
   firewall_policy_change_protection = var.firewall_policy_change_protection

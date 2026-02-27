@@ -212,6 +212,12 @@ variable "firewall_policy_arn" {
   default     = ""
 }
 
+variable "create_allow_all_policy" {
+  description = "TEMPORARY: Create a permissive allow-all firewall policy that passes all traffic without inspection. Use only during initial hub build and connectivity testing. Takes precedence over firewall_policy_arn. Must be set to false before production."
+  type        = bool
+  default     = false
+}
+
 ################################################################################
 # Transit Gateway Configuration
 ################################################################################
@@ -224,6 +230,24 @@ variable "transit_gateway_id" {
 
 variable "create_transit_gateway" {
   description = "Create a new Transit Gateway"
+  type        = bool
+  default     = false
+}
+
+variable "create_environment_route_tables" {
+  description = "Whether to create per-environment TGW route tables for traffic segmentation and firewall enforcement. When true, the TGW default route table association and propagation are disabled."
+  type        = bool
+  default     = false
+}
+
+variable "environments" {
+  description = "List of environment names to create dedicated TGW route tables for (e.g. [\"dev\", \"test\", \"preprod\", \"prod\"]). Only used when create_environment_route_tables is true."
+  type        = list(string)
+  default     = []
+}
+
+variable "create_shared_services_route_table" {
+  description = "Whether to create a dedicated TGW route table for shared services attachments. Only used when create_environment_route_tables is true."
   type        = bool
   default     = false
 }
