@@ -260,29 +260,29 @@ output "dr_endpoint_dns_entries" {
 }
 
 ################################################################################
-# Future: Network Firewall Outputs (placeholder)
+# Network Firewall Outputs
 ################################################################################
 
-# output "firewall_endpoint_ids" {
-#   description = "Map of AZ to Network Firewall endpoint ID"
-#   value       = var.enable_network_firewall ? module.network_firewall[0].endpoint_ids : {}
-# }
+output "firewall_endpoint_ids" {
+  description = "Map of AZ to Network Firewall endpoint ID"
+  value       = module.network_firewall[0].firewall_endpoint_ids
+}
 
-# output "dr_firewall_endpoint_ids" {
-#   description = "Map of AZ to DR Network Firewall endpoint ID"
-#   value       = var.enable_network_firewall && var.dr_enabled ? module.network_firewall[0].dr_endpoint_ids : {}
-# }
+output "dr_firewall_endpoint_ids" {
+  description = "Map of AZ to DR Network Firewall endpoint ID (empty if DR not enabled)"
+  value       = module.network_firewall[0].dr_firewall_endpoint_ids
+}
 
 ################################################################################
-# Future: Transit Gateway Outputs (placeholder)
+# Transit Gateway Outputs
 ################################################################################
 
-# output "transit_gateway_id" {
-#   description = "ID of the Transit Gateway"
-#   value       = var.create_transit_gateway || var.transit_gateway_id != "" ? module.transit_gateway[0].transit_gateway_id : null
-# }
+output "transit_gateway_id" {
+  description = "ID of the Transit Gateway"
+  value       = module.transit_gateway[0].transit_gateway_id
+}
 
-# output "transit_gateway_attachment_id" {
-#   description = "ID of the Transit Gateway VPC attachment"
-#   value       = var.create_transit_gateway || var.transit_gateway_id != "" ? module.transit_gateway[0].attachment_id : null
-# }
+output "transit_gateway_attachment_id" {
+  description = "ID of the Transit Gateway VPC attachment"
+  value       = module.transit_gateway[0].vpc_attachment_id
+}

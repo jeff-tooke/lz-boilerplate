@@ -12,11 +12,22 @@ resource "aws_security_group" "endpoint" {
   vpc_id      = var.vpc_id
 
   ingress {
-    description = "HTTPS from VPC"
+    description = "HTTPS from hub VPC"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = [data.aws_vpc.selected.cidr_block]
+  }
+
+  dynamic "ingress" {
+    for_each = var.spoke_cidr_supernet != "" ? [var.spoke_cidr_supernet] : []
+    content {
+      description = "HTTPS from spoke VPC supernet"
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = [ingress.value]
+    }
   }
 
   egress {
@@ -47,6 +58,7 @@ resource "aws_vpc_endpoint" "gateway" {
   service_name      = each.value
   vpc_endpoint_type = "Gateway"
   route_table_ids   = var.route_table_ids
+  policy            = var.gateway_endpoint_policy
 
   tags = merge(
     local.common_tags,
@@ -67,6 +79,7 @@ resource "aws_vpc_endpoint" "interface" {
   subnet_ids          = var.subnet_ids
   security_group_ids  = local.security_group_ids
   private_dns_enabled = var.private_dns_enabled
+  policy              = var.interface_endpoint_policy
 
   tags = merge(
     local.common_tags,

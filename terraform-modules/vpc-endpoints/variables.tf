@@ -103,3 +103,47 @@ variable "dr_security_group_ids" {
   type        = list(string)
   default     = []
 }
+
+################################################################################
+# Endpoint Policy Variables
+################################################################################
+
+variable "interface_endpoint_policy" {
+  description = "IAM policy document (JSON) to attach to all interface endpoints. When null, the AWS-managed default (allow all) applies."
+  type        = string
+  default     = null
+}
+
+variable "gateway_endpoint_policy" {
+  description = "IAM policy document (JSON) to attach to all gateway endpoints (S3, DynamoDB). When null, the AWS-managed default (allow all) applies."
+  type        = string
+  default     = null
+}
+
+variable "dr_interface_endpoint_policy" {
+  description = "IAM policy document (JSON) to attach to all DR region interface endpoints. When null, the AWS-managed default (allow all) applies."
+  type        = string
+  default     = null
+}
+
+variable "dr_gateway_endpoint_policy" {
+  description = "IAM policy document (JSON) to attach to all DR region gateway endpoints (S3, DynamoDB). When null, the AWS-managed default (allow all) applies."
+  type        = string
+  default     = null
+}
+
+################################################################################
+# Spoke Supernet Security Group Variables
+################################################################################
+
+variable "spoke_cidr_supernet" {
+  description = "CIDR supernet covering all spoke VPCs (e.g. 10.0.0.0/8). When provided, the default endpoint security group adds an HTTPS ingress rule for this range in addition to the hub VPC CIDR. Required when Network Firewall preserves source IPs (no SNAT) so spoke traffic reaches endpoint ENIs with spoke-origin addresses."
+  type        = string
+  default     = ""
+}
+
+variable "dr_spoke_cidr_supernet" {
+  description = "CIDR supernet covering all DR-region spoke VPCs. When provided, the DR default endpoint security group adds an HTTPS ingress rule for this range."
+  type        = string
+  default     = ""
+}

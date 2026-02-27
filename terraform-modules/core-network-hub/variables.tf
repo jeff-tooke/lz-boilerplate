@@ -197,33 +197,65 @@ variable "dr_endpoint_security_group_ids" {
 }
 
 ################################################################################
-# Future: Network Firewall Configuration (placeholder)
+# Network Firewall Configuration
 ################################################################################
 
-# variable "enable_network_firewall" {
-#   description = "Enable AWS Network Firewall deployment"
-#   type        = bool
-#   default     = false
-# }
+variable "enable_network_firewall" {
+  description = "Enable AWS Network Firewall deployment"
+  type        = bool
+  default     = false
+}
 
-# variable "firewall_policy_arn" {
-#   description = "ARN of the firewall policy to attach"
-#   type        = string
-#   default     = ""
-# }
+variable "firewall_policy_arn" {
+  description = "ARN of an existing firewall policy to attach. If not provided, a new policy will be created."
+  type        = string
+  default     = ""
+}
 
 ################################################################################
-# Future: Transit Gateway Configuration (placeholder)
+# Transit Gateway Configuration
 ################################################################################
 
-# variable "transit_gateway_id" {
-#   description = "ID of an existing Transit Gateway to attach to"
-#   type        = string
-#   default     = ""
-# }
+variable "transit_gateway_id" {
+  description = "ID of an existing Transit Gateway to attach to (required if create_transit_gateway is false)"
+  type        = string
+  default     = ""
+}
 
-# variable "create_transit_gateway" {
-#   description = "Create a new Transit Gateway"
-#   type        = bool
-#   default     = false
-# }
+variable "create_transit_gateway" {
+  description = "Create a new Transit Gateway"
+  type        = bool
+  default     = false
+}
+
+################################################################################
+# Routing Configuration
+################################################################################
+
+variable "spoke_cidr_supernet" {
+  description = "Supernet CIDR covering all spoke VPC CIDRs (e.g. 10.0.0.0/8). Used to route spoke-destined traffic through the Network Firewall before returning via TGW, and to allow HTTPS from spoke IPs to interface endpoint ENIs."
+  type        = string
+  default     = ""
+}
+
+################################################################################
+# Endpoint Policy Configuration
+################################################################################
+
+variable "aws_organization_id" {
+  description = "AWS Organizations ID (e.g. o-xxxxxxxxxx). When provided and no explicit endpoint policy is given, a default policy restricting endpoint access to organisation principals is generated automatically."
+  type        = string
+  default     = ""
+}
+
+variable "interface_endpoint_policy" {
+  description = "IAM policy document (JSON) to attach to all interface VPC endpoints. When null and aws_organization_id is set, a default org-restricted policy is applied. When null and no org ID is set, the AWS-managed default (allow all) applies."
+  type        = string
+  default     = null
+}
+
+variable "gateway_endpoint_policy" {
+  description = "IAM policy document (JSON) to attach to all gateway VPC endpoints (S3, DynamoDB). When null and aws_organization_id is set, a default org-restricted policy is applied. When null and no org ID is set, the AWS-managed default (allow all) applies."
+  type        = string
+  default     = null
+}
