@@ -88,6 +88,30 @@ variable "enable_dns_support" {
   default     = true
 }
 
+variable "enable_s3_endpoint" {
+  description = "When true, creates an S3 Gateway VPC endpoint and associates it with all non-TGW route tables"
+  type        = bool
+  default     = false
+}
+
+variable "organization_id" {
+  description = "AWS Organization ID (e.g. o-xxxxxxxxxx) to restrict the S3 and DynamoDB endpoint policies to. Leave empty to look up automatically via data source when either gateway endpoint is enabled."
+  type        = string
+  default     = ""
+}
+
+variable "enable_dynamodb_endpoint" {
+  description = "When true, creates a DynamoDB Gateway VPC endpoint and associates it with all non-TGW route tables"
+  type        = bool
+  default     = false
+}
+
+variable "enable_resolver_rule_associations" {
+  description = "When true, discovers all FORWARD resolver rules shared with this account via RAM and associates them with the spoke VPC"
+  type        = bool
+  default     = false
+}
+
 variable "tags" {
   description = "Additional tags to merge onto all resources"
   type        = map(string)

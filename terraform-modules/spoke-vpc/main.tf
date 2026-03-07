@@ -6,6 +6,70 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
+data "aws_region" "current" {}
+
+# Only called when enable_s3_endpoint = true and organization_id is not set
+data "aws_organizations_organization" "current" {
+  count = local.lookup_org_id ? 1 : 0
+}
+
+# Discovers all FORWARD resolver rules shared with this account via RAM
+data "aws_route53_resolver_rules" "shared_forward" {
+  count        = local.associate_resolver_rules ? 1 : 0
+  rule_type    = "FORWARD"
+  share_status = "SHARED_WITH_ME"
+}
+
+# Look up individual rule details so we can filter by domain_name
+data "aws_route53_resolver_rule" "shared_forward" {
+  for_each         = local.associate_resolver_rules ? toset(data.aws_route53_resolver_rules.shared_forward[0].resolver_rule_ids) : toset([])
+  resolver_rule_id = each.value
+}
+
+data "aws_iam_policy_document" "dynamodb_endpoint" {
+  count = local.create_dynamodb_endpoint ? 1 : 0
+
+  statement {
+    sid       = "RestrictToOrganisation"
+    effect    = "Allow"
+    actions   = ["dynamodb:*"]
+    resources = ["*"]
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:ResourceOrgID"
+      values   = [local.effective_org_id]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "s3_endpoint" {
+  count = local.create_s3_endpoint ? 1 : 0
+
+  statement {
+    sid       = "RestrictToOrganisation"
+    effect    = "Allow"
+    actions   = ["s3:*"]
+    resources = ["*"]
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:ResourceOrgID"
+      values   = [local.effective_org_id]
+    }
+  }
+}
+
 ################################################################################
 # VPC
 ################################################################################
@@ -131,4 +195,72 @@ resource "aws_ec2_transit_gateway_route_table_propagation" "to_shared_services" 
 
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this[0].id
   transit_gateway_route_table_id = var.shared_services_route_table_id
+}
+
+################################################################################
+# Route53 Resolver Rule Associations (optional)
+################################################################################
+
+resource "aws_route53_resolver_rule_association" "shared_forward" {
+  for_each = local.resolver_rules_to_associate
+
+  resolver_rule_id = each.value
+  vpc_id           = aws_vpc.this.id
+  name             = "${var.name}-resolver-${each.value}"
+}
+
+################################################################################
+# DynamoDB Gateway Endpoint (optional)
+################################################################################
+
+resource "aws_vpc_endpoint" "dynamodb" {
+  count = local.create_dynamodb_endpoint ? 1 : 0
+
+  vpc_id            = aws_vpc.this.id
+  service_name      = "com.amazonaws.${data.aws_region.current.name}.dynamodb"
+  vpc_endpoint_type = "Gateway"
+
+  # Exclude TGW attachment subnet route tables (first tier) when TGW is present,
+  # to avoid injecting DynamoDB routes into TGW ENI subnets.
+  route_table_ids = [
+    for k, rt in aws_route_table.this : rt.id
+    if !local.create_tgw_attachment || !contains(local.tgw_subnet_rt_keys, k)
+  ]
+
+  policy = data.aws_iam_policy_document.dynamodb_endpoint[0].json
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${var.name}-dynamodb-endpoint"
+    }
+  )
+}
+
+################################################################################
+# S3 Gateway Endpoint (optional)
+################################################################################
+
+resource "aws_vpc_endpoint" "s3" {
+  count = local.create_s3_endpoint ? 1 : 0
+
+  vpc_id            = aws_vpc.this.id
+  service_name      = "com.amazonaws.${data.aws_region.current.name}.s3"
+  vpc_endpoint_type = "Gateway"
+
+  # Exclude TGW attachment subnet route tables (first tier) when TGW is present,
+  # to avoid injecting S3 routes into TGW ENI subnets.
+  route_table_ids = [
+    for k, rt in aws_route_table.this : rt.id
+    if !local.create_tgw_attachment || !contains(local.tgw_subnet_rt_keys, k)
+  ]
+
+  policy = data.aws_iam_policy_document.s3_endpoint[0].json
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${var.name}-s3-endpoint"
+    }
+  )
 }

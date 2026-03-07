@@ -70,3 +70,23 @@ output "resolved_environment_route_table_id" {
   description = "The TGW route table ID auto-selected from environment_route_table_ids for var.environment; null when not provided"
   value       = local.environment_route_table_id != "" ? local.environment_route_table_id : null
 }
+
+output "s3_endpoint_id" {
+  description = "ID of the S3 Gateway VPC endpoint; null when enable_s3_endpoint is false"
+  value       = local.create_s3_endpoint ? aws_vpc_endpoint.s3[0].id : null
+}
+
+output "s3_endpoint_organization_id" {
+  description = "The AWS Organization ID used in the S3 endpoint policy; null when endpoint is disabled"
+  value       = local.create_s3_endpoint ? local.effective_org_id : null
+}
+
+output "dynamodb_endpoint_id" {
+  description = "ID of the DynamoDB Gateway VPC endpoint; null when enable_dynamodb_endpoint is false"
+  value       = local.create_dynamodb_endpoint ? aws_vpc_endpoint.dynamodb[0].id : null
+}
+
+output "resolver_rule_association_ids" {
+  description = "Map of resolver rule ID → association ID for all RAM-shared FORWARD rules associated with the VPC; empty when enable_resolver_rule_associations is false"
+  value       = { for k, v in aws_route53_resolver_rule_association.shared_forward : k => v.id }
+}

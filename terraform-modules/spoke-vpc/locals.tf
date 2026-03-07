@@ -74,4 +74,55 @@ locals {
   environment_route_table_id = lookup(var.environment_route_table_ids, var.environment, "")
   enable_tgw_rt_wiring       = local.create_tgw_attachment && var.inspection_route_table_id != "" && local.environment_route_table_id != ""
   enable_shared_svc_prop     = local.enable_tgw_rt_wiring && var.shared_services_route_table_id != ""
+
+  ################################################################################
+  # S3 Gateway Endpoint
+  ################################################################################
+
+  # Route table keys belonging to TGW attachment subnets (first tier, one per AZ);
+  # excluded from the S3 endpoint when a TGW attachment is present.
+  tgw_subnet_rt_keys = toset([
+    for az in local.selected_azs :
+    "${local.effective_subnet_names[0]}-${az}"
+  ])
+
+  create_s3_endpoint       = var.enable_s3_endpoint
+  create_dynamodb_endpoint = var.enable_dynamodb_endpoint
+
+  # Look up org ID via data source only when a gateway endpoint is enabled and no ID was supplied.
+  lookup_org_id = (local.create_s3_endpoint || local.create_dynamodb_endpoint) && var.organization_id == ""
+
+  # Effective org ID: explicit variable wins; falls back to data source lookup.
+  effective_org_id = var.organization_id != "" ? var.organization_id : (
+    local.lookup_org_id ? data.aws_organizations_organization.current[0].id : ""
+  )
+
+  ################################################################################
+  # Route53 Resolver Rule Associations
+  ################################################################################
+
+  associate_resolver_rules = var.enable_resolver_rule_associations
+
+  # Keywords derived from enabled gateway endpoints; resolver rules whose domain_name
+  # contains any keyword are excluded from VPC association.
+  gateway_excluded_keywords = toset(concat(
+    local.create_s3_endpoint       ? ["s3"]       : [],
+    local.create_dynamodb_endpoint ? ["dynamodb"] : []
+  ))
+
+  # Domain name map for all discovered shared FORWARD rules (populated via singular data source)
+  shared_resolver_rule_details = local.associate_resolver_rules ? {
+    for rule_id, rule in data.aws_route53_resolver_rule.shared_forward :
+    rule_id => rule.domain_name
+  } : {}
+
+  # Filtered set: exclude rules for services that have a gateway endpoint enabled
+  resolver_rules_to_associate = toset([
+    for rule_id, domain_name in local.shared_resolver_rule_details :
+    rule_id
+    if !anytrue([
+      for keyword in local.gateway_excluded_keywords :
+      strcontains(lower(domain_name), keyword)
+    ])
+  ])
 }
