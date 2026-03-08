@@ -320,3 +320,57 @@ output "dr_shared_services_route_table_id" {
   description = "ID of the DR shared services TGW route table (null if not enabled)"
   value       = module.transit_gateway[0].dr_shared_services_route_table_id
 }
+
+################################################################################
+# Site-to-Site VPN Outputs
+################################################################################
+
+output "vpn_customer_gateway_ids" {
+  description = "Map of VPN connection name to primary customer gateway ID (empty map if VPN not enabled)"
+  value       = one(module.site_to_site_vpn[*].customer_gateway_ids)
+}
+
+output "vpn_connection_ids" {
+  description = "Map of VPN connection name to primary VPN connection ID (empty map if VPN not enabled)"
+  value       = one(module.site_to_site_vpn[*].vpn_connection_ids)
+}
+
+output "vpn_tunnel1_addresses" {
+  description = "Map of VPN connection name to primary tunnel 1 outside IP address (empty map if VPN not enabled)"
+  value       = one(module.site_to_site_vpn[*].vpn_tunnel1_addresses)
+}
+
+output "vpn_tunnel2_addresses" {
+  description = "Map of VPN connection name to primary tunnel 2 outside IP address (empty map if VPN not enabled)"
+  value       = one(module.site_to_site_vpn[*].vpn_tunnel2_addresses)
+}
+
+output "vpn_route_table_id" {
+  description = "ID of the remote-connectivity TGW route table for VPN attachments (null if VPN not enabled)"
+  value       = one(module.site_to_site_vpn[*].vpn_route_table_id)
+}
+
+output "dr_vpn_customer_gateway_ids" {
+  description = "Map of VPN connection name to DR customer gateway ID (empty map if VPN or DR not enabled)"
+  value       = one(module.site_to_site_vpn[*].dr_customer_gateway_ids)
+}
+
+output "dr_vpn_connection_ids" {
+  description = "Map of VPN connection name to DR VPN connection ID (empty map if VPN or DR not enabled)"
+  value       = one(module.site_to_site_vpn[*].dr_vpn_connection_ids)
+}
+
+output "dr_vpn_tunnel1_addresses" {
+  description = "Map of VPN connection name to DR tunnel 1 outside IP address (empty map if VPN or DR not enabled)"
+  value       = one(module.site_to_site_vpn[*].dr_vpn_tunnel1_addresses)
+}
+
+output "dr_vpn_tunnel2_addresses" {
+  description = "Map of VPN connection name to DR tunnel 2 outside IP address (empty map if VPN or DR not enabled)"
+  value       = one(module.site_to_site_vpn[*].dr_vpn_tunnel2_addresses)
+}
+
+output "dr_vpn_route_table_id" {
+  description = "ID of the DR remote-connectivity TGW route table for VPN attachments (null if VPN or DR not enabled)"
+  value       = one(module.site_to_site_vpn[*].dr_vpn_route_table_id)
+}

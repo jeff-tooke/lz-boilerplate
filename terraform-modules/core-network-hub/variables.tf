@@ -263,6 +263,33 @@ variable "spoke_cidr_supernet" {
 }
 
 ################################################################################
+# Site-to-Site VPN Configuration
+################################################################################
+
+variable "create_site_to_site_vpn" {
+  description = "Whether to create site-to-site VPN connections. Requires create_transit_gateway = true or transit_gateway_id != \"\", and create_environment_route_tables = true."
+  type        = bool
+  default     = false
+}
+
+variable "vpn_connections" {
+  description = "Map of VPN connections to create. Keys are logical names (e.g. 'it_onprem', 'it_azure'). Only used when create_site_to_site_vpn = true."
+  type = map(object({
+    enabled                 = optional(bool, true)
+    bgp_asn                 = number
+    ip_address              = string
+    type                    = optional(string, "ipsec.1")
+    static_routes_only      = optional(bool, false)
+    destination_cidr_blocks = optional(list(string), [])
+    tunnel1_inside_cidr     = optional(string)
+    tunnel2_inside_cidr     = optional(string)
+    tunnel1_preshared_key   = optional(string)
+    tunnel2_preshared_key   = optional(string)
+  }))
+  default = {}
+}
+
+################################################################################
 # Endpoint Policy Configuration
 ################################################################################
 

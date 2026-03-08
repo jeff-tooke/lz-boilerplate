@@ -131,3 +131,36 @@ module "transit_gateway" {
 
   tags = local.common_tags
 }
+
+################################################################################
+# Site-to-Site VPN Module
+# Creates customer gateways, VPN connections, and a dedicated remote-connectivity
+# TGW route table. Only created when create_site_to_site_vpn = true AND a
+# Transit Gateway is configured (create_transit_gateway = true or transit_gateway_id != "").
+################################################################################
+
+module "site_to_site_vpn" {
+  count  = var.create_site_to_site_vpn && (var.create_transit_gateway || var.transit_gateway_id != "") ? 1 : 0
+  source = "../site-to-site-vpn"
+
+  name        = var.name
+  environment = var.environment
+  tags        = local.common_tags
+
+  vpn_connections = var.vpn_connections
+
+  transit_gateway_id             = module.transit_gateway[0].transit_gateway_id
+  hub_attachment_id              = module.transit_gateway[0].vpc_attachment_id
+  inspection_route_table_id      = coalesce(module.transit_gateway[0].inspection_route_table_id, "")
+  environment_route_table_ids    = module.transit_gateway[0].environment_route_table_ids
+  shared_services_route_table_id = coalesce(module.transit_gateway[0].shared_services_route_table_id, "")
+  spoke_cidr_supernet            = var.spoke_cidr_supernet
+
+  dr_enabled                        = var.dr_enabled
+  secondary_region                  = var.secondary_region
+  dr_transit_gateway_id             = var.dr_enabled ? coalesce(module.transit_gateway[0].dr_transit_gateway_id, "") : ""
+  dr_hub_attachment_id              = var.dr_enabled ? coalesce(module.transit_gateway[0].dr_vpc_attachment_id, "") : ""
+  dr_inspection_route_table_id      = var.dr_enabled ? coalesce(module.transit_gateway[0].dr_inspection_route_table_id, "") : ""
+  dr_environment_route_table_ids    = var.dr_enabled ? module.transit_gateway[0].dr_environment_route_table_ids : {}
+  dr_shared_services_route_table_id = var.dr_enabled ? coalesce(module.transit_gateway[0].dr_shared_services_route_table_id, "") : ""
+}
